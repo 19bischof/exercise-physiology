@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive study atlas of aerobic and anaerobic exercise physiology for triathletes and strength athletes.">
+  <title>The Moving Body — Exercise Physiology Atlas</title>
+  <style>
+    :root {
+      --ink: #ecf7f4;
+      --muted: #9bb3af;
+      --bg: #07120f;
+      --bg-2: #0a1b17;
+      --panel: rgba(13, 34, 29, .84);
+      --panel-2: rgba(18, 46, 39, .72);
+      --line: rgba(201, 255, 228, .15);
+      --green: #8df5b2;
+      --cyan: #62dceb;
+      --orange: #ffb66e;
+      --pink: #ff799d;
+      --violet: #b8a1ff;
+      --yellow: #f2e47c;
+      --radius: 22px;
+      --shadow: 0 24px 70px rgba(0, 0, 0, .28);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 4%, rgba(98, 220, 235, .12), transparent 28rem),
+        radial-gradient(circle at 92% 15%, rgba(141, 245, 178, .11), transparent 30rem),
+        linear-gradient(180deg, #06100e, var(--bg) 40%, #081511);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-width: 320px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .22;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(to bottom, black, transparent 82%);
+    }
+
+    a { color: var(--cyan); }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+      outline: 3px solid var(--yellow);
+      outline-offset: 4px;
+    }
+    .wrap { width: min(1160px, calc(100% - 36px)); margin-inline: auto; }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: rgba(6, 16, 14, .82);
+      backdrop-filter: blur(18px);
+    }
+    .nav-inner { min-height: 58px; display: flex; align-items: center; gap: 22px; }
+    .brand { color: var(--ink); text-decoration: none; font-weight: 760; letter-spacing: -.02em; white-space: nowrap; }
+    .brand span { color: var(--green); }
+    .nav-links { display: flex; gap: 18px; overflow-x: auto; scrollbar-width: none; }
+    .nav-links::-webkit-scrollbar { display: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: .84rem; white-space: nowrap; }
+    .nav-links a:hover { color: var(--ink); }
+
+    .hero { padding: 92px 0 64px; }
+    .hero-grid { display: grid; grid-template-columns: 1.04fr .96fr; gap: 54px; align-items: center; }
+    .eyebrow { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 20px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 7px;
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 6px 11px; color: var(--muted); background: rgba(255,255,255,.025);
+      font-size: .76rem; letter-spacing: .04em; text-transform: uppercase;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 14px var(--green); }
+    h1, h2, h3 { line-height: 1.08; letter-spacing: -.04em; margin: 0; text-wrap: balance; }
+    h1 { font-size: clamp(3.3rem, 8vw, 7rem); font-weight: 800; }
+    h1 em { color: var(--green); font-style: normal; }
+    .hero-copy > p { max-width: 660px; color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.25rem); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 11px 16px; border: 1px solid transparent; border-radius: 12px;
+      text-decoration: none; font-weight: 700; cursor: pointer;
+      background: var(--green); color: #072014;
+    }
+    .button.secondary { background: transparent; color: var(--ink); border-color: var(--line); }
+
+    .hero-visual {
+      position: relative; min-height: 570px; overflow: hidden;
+      border: 1px solid var(--line); border-radius: 34px;
+      background: linear-gradient(145deg, rgba(14,42,35,.94), rgba(6,20,17,.8));
+      box-shadow: var(--shadow);
+    }
+    .hero-visual::after {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 47%, rgba(98,220,235,.16), transparent 35%);
+      pointer-events: none;
+    }
+    .body-map { position: absolute; inset: 42px 20px 22px; width: calc(100% - 40px); height: calc(100% - 64px); }
+    .body-outline { fill: rgba(141,245,178,.055); stroke: rgba(141,245,178,.42); stroke-width: 2; }
+    .organ { stroke-width: 2; filter: drop-shadow(0 0 12px currentColor); }
+    .pulse { transform-box: fill-box; transform-origin: center; animation: pulse 2.4s ease-in-out infinite; }
+    .mito { animation: float 4s ease-in-out infinite; }
+    .flow { stroke-dasharray: 7 8; animation: flow 2s linear infinite; }
+    @keyframes flow { to { stroke-dashoffset: -30; } }
+    @keyframes pulse { 50% { transform: scale(1.12); opacity: .75; } }
+    @keyframes float { 50% { transform: translateY(-7px); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; } }
+    .map-label { position: absolute; z-index: 2; max-width: 155px; font-size: .76rem; color: var(--muted); }
+    .map-label b { display: block; color: var(--ink); font-size: .86rem; }
+    .label-lungs { top: 16%; left: 5%; }
+    .label-heart { top: 35%; right: 5%; }
+    .label-muscle { bottom: 21%; left: 5%; }
+    .label-mito { bottom: 8%; right: 5%; }
+    .hero-equation {
+      position: absolute; z-index: 3; left: 50%; bottom: 20px; transform: translateX(-50%);
+      width: calc(100% - 38px); border: 1px solid var(--line); border-radius: 16px;
+      padding: 12px 14px; text-align: center; background: rgba(4,15,12,.84); backdrop-filter: blur(12px);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .82rem;
+    }
+
+    .truth-strip { padding: 0 0 48px; }
+    .truth {
+      display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center;
+      padding: 20px 22px; border: 1px solid rgba(242,228,124,.24); border-radius: 18px;
+      background: rgba(242,228,124,.055);
+    }
+    .truth strong { color: var(--yellow); font-size: .78rem; text-transform: uppercase; letter-spacing: .1em; }
+    .truth p { margin: 0; }
+
+    section { padding: 84px 0; scroll-margin-top: 60px; }
+    .section-kicker { color: var(--green); font: 700 .76rem/1.2 ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; }
+    h2 { margin-top: 10px; font-size: clamp(2.1rem, 5vw, 4.15rem); max-width: 900px; }
+    .lede { max-width: 780px; margin: 20px 0 38px; color: var(--muted); font-size: 1.08rem; }
+    h3 { font-size: 1.32rem; }
+    p { text-wrap: pretty; }
+    .muted { color: var(--muted); }
+    .small { font-size: .82rem; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    .card {
+      border: 1px solid var(--line); border-radius: var(--radius);
+      background: var(--panel); box-shadow: 0 12px 40px rgba(0,0,0,.14);
+    }
+    .card-pad { padding: 26px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
+    .number { color: var(--green); font: 700 .76rem/1 ui-monospace, monospace; letter-spacing: .08em; }
+    .icon-orb { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; background: rgba(141,245,178,.1); color: var(--green); font-weight: 800; margin-bottom: 18px; }
+    .clean { list-style: none; padding: 0; margin: 16px 0 0; }
+    .clean li { position: relative; padding-left: 19px; margin: 8px 0; color: var(--muted); }
+    .clean li::before { content: ""; position: absolute; left: 0; top: .7em; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    .source { font-size: .72em; vertical-align: super; text-decoration: none; color: var(--cyan); }
+
+    .equation {
+      margin: 18px 0; padding: 17px 18px; overflow-x: auto;
+      border-left: 3px solid var(--cyan); background: rgba(98,220,235,.055);
+      color: #dffcff; font: 650 clamp(.78rem, 1.5vw, .96rem)/1.7 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .equation.green { border-color: var(--green); background: rgba(141,245,178,.055); }
+    .equation.orange { border-color: var(--orange); background: rgba(255,182,110,.055); }
+    .tag { display: inline-flex; padding: 3px 8px; border-radius: 999px; font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; background: rgba(255,255,255,.07); color: var(--muted); }
+
+    .effort-lab { overflow: hidden; }
+    .lab-head { display: flex; justify-content: space-between; gap: 20px; align-items: end; padding: 26px 26px 0; }
+    .effort-tabs { display: flex; gap: 8px; padding: 18px 26px; overflow-x: auto; }
+    .effort-tab, .lens-tab, .quiz-option {
+      border: 1px solid var(--line); background: rgba(255,255,255,.025); border-radius: 999px;
+      padding: 8px 12px; cursor: pointer; white-space: nowrap;
+    }
+    .effort-tab[aria-pressed="true"], .lens-tab[aria-pressed="true"] { color: #062016; background: var(--green); border-color: var(--green); font-weight: 800; }
+    .lab-body { display: grid; grid-template-columns: 1.2fr .8fr; gap: 26px; padding: 0 26px 28px; }
+    .stack { height: 52px; display: flex; overflow: hidden; border-radius: 14px; background: rgba(255,255,255,.04); }
+    .stack > div { min-width: 3px; transition: width .45s ease; display: grid; place-items: center; color: #07120f; font-size: .74rem; font-weight: 800; overflow: hidden; }
+    .pcr { background: var(--cyan); }
+    .gly { background: var(--orange); }
+    .oxi { background: var(--green); }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; font-size: .78rem; color: var(--muted); }
+    .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; }
+    .lab-facts { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+    .fact { padding: 14px; border-radius: 14px; background: rgba(255,255,255,.035); }
+    .fact span { display: block; color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; }
+    .fact b { font-size: .92rem; }
+
+    .pathway {
+      position: relative; display: flex; align-items: center; gap: 10px;
+      padding: 26px; overflow-x: auto;
+    }
+    .node { flex: 1 0 132px; min-height: 94px; display: grid; place-items: center; text-align: center; padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel-2); }
+    .node b { display: block; }
+    .node small { color: var(--muted); }
+    .arrow { flex: 0 0 24px; color: var(--green); text-align: center; font-size: 1.4rem; }
+    .branch-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-top: 18px; }
+
+    .oxygen-line { display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; align-items: start; }
+    .oxygen-step { position: relative; text-align: center; padding: 18px 8px 12px; }
+    .oxygen-step:not(:last-child)::after { content: "→"; position: absolute; top: 31px; right: -8px; color: var(--cyan); }
+    .oxygen-step .bubble { width: 48px; height: 48px; display: grid; place-items: center; margin: auto auto 12px; border-radius: 50%; background: rgba(98,220,235,.1); border: 1px solid rgba(98,220,235,.3); color: var(--cyan); font-weight: 800; }
+    .oxygen-step b { display: block; font-size: .88rem; }
+    .oxygen-step small { color: var(--muted); }
+
+    .compare { overflow-x: auto; }
+    .compare-head, .compare-row { display: grid; grid-template-columns: 1.1fr repeat(3,1fr); gap: 12px; align-items: center; }
+    .compare-head { padding: 14px 20px; color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; border-bottom: 1px solid var(--line); }
+    .compare-row { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+    .compare-row:last-child { border-bottom: 0; }
+    .meter { height: 8px; border-radius: 999px; background: rgba(255,255,255,.07); overflow: hidden; }
+    .meter span { display: block; height: 100%; background: var(--green); border-radius: inherit; }
+
+    .timeline { position: relative; display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; }
+    .timeline::before { content: ""; position: absolute; left: 7%; right: 7%; top: 21px; height: 1px; background: var(--line); }
+    .time-item { position: relative; padding-top: 50px; }
+    .time-item::before { content: ""; position: absolute; top: 14px; left: 0; width: 15px; height: 15px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 7px rgba(141,245,178,.08); }
+    .time-item b { display: block; }
+    .time-item p { color: var(--muted); font-size: .84rem; }
+
+    .adapt-track { padding: 28px; }
+    .adapt-track.endurance { border-top: 3px solid var(--cyan); }
+    .adapt-track.strength { border-top: 3px solid var(--orange); }
+    .signal { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin: 18px 0; }
+    .signal span { padding: 6px 9px; border-radius: 8px; background: rgba(255,255,255,.05); font: 700 .73rem ui-monospace, monospace; }
+    .signal i { color: var(--muted); font-style: normal; }
+
+    .lens-switch { display: flex; gap: 8px; margin-bottom: 18px; }
+    .lens-panel { display: none; }
+    .lens-panel.active { display: block; }
+    .priority-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; }
+    .priority-grid .card { padding: 24px; }
+
+    .calculator { display: grid; grid-template-columns: .75fr 1.25fr; gap: 28px; padding: 28px; }
+    .field { margin-bottom: 17px; }
+    .field label { display: block; margin-bottom: 7px; color: var(--muted); font-size: .83rem; }
+    .field input, .field select {
+      width: 100%; color: var(--ink); background: rgba(255,255,255,.045);
+      border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px;
+    }
+    .results { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+    .result { padding: 18px; border-radius: 16px; background: rgba(255,255,255,.035); }
+    .result span { color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+    .result strong { display: block; margin-top: 6px; color: var(--green); font-size: 1.45rem; }
+    .result.wide { grid-column: 1/-1; }
+
+    .myth { display: grid; grid-template-columns: auto 1fr; gap: 15px; padding: 20px; }
+    .myth-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,121,157,.1); color: var(--pink); font-weight: 900; }
+    .myth p { margin: 6px 0 0; color: var(--muted); }
+
+    .quiz-card { padding: 28px; }
+    .quiz-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; }
+    .quiz-options { display: grid; gap: 10px; margin: 22px 0; }
+    .quiz-option { border-radius: 12px; text-align: left; padding: 12px 14px; white-space: normal; }
+    .quiz-option:hover { border-color: rgba(141,245,178,.5); }
+    .quiz-option.correct { border-color: var(--green); background: rgba(141,245,178,.1); }
+    .quiz-option.wrong { border-color: var(--pink); background: rgba(255,121,157,.08); }
+    .quiz-feedback { min-height: 48px; color: var(--muted); }
+
+    details { border-top: 1px solid var(--line); }
+    details:first-child { border-top: 0; }
+    summary { cursor: pointer; padding: 15px 0; font-weight: 700; }
+    details p { color: var(--muted); margin-top: 0; }
+
+    .sources { columns: 2; column-gap: 34px; }
+    .sources li { break-inside: avoid; margin-bottom: 13px; color: var(--muted); font-size: .82rem; }
+    .sources a { overflow-wrap: anywhere; }
+    footer { padding: 28px 0 60px; border-top: 1px solid var(--line); color: var(--muted); font-size: .82rem; }
+
+    @media (max-width: 900px) {
+      .hero-grid, .lab-body, .calculator { grid-template-columns: 1fr; }
+      .hero { padding-top: 62px; }
+      .hero-visual { min-height: 510px; }
+      .grid-4 { grid-template-columns: repeat(2,1fr); }
+      .grid-3 { grid-template-columns: 1fr; }
+      .oxygen-line { grid-template-columns: repeat(3,1fr); }
+      .oxygen-step:nth-child(3)::after { display: none; }
+      .timeline { grid-template-columns: 1fr; }
+      .timeline::before { left: 7px; right: auto; top: 7px; bottom: 7px; width: 1px; height: auto; }
+      .time-item { padding: 0 0 0 38px; }
+      .time-item::before { top: 5px; }
+    }
+    @media (max-width: 660px) {
+      .wrap { width: min(100% - 24px, 1160px); }
+      section { padding: 62px 0; }
+      h1 { font-size: clamp(3rem, 17vw, 5rem); }
+      .hero-grid { gap: 32px; }
+      .hero-visual { min-height: 470px; }
+      .label-lungs, .label-muscle { left: 3%; }
+      .label-heart, .label-mito { right: 3%; }
+      .map-label { max-width: 115px; }
+      .grid-2, .branch-row, .priority-grid { grid-template-columns: 1fr; }
+      .oxygen-line { grid-template-columns: repeat(2,1fr); }
+      .oxygen-step::after { display: none !important; }
+      .grid-4, .results { grid-template-columns: 1fr; }
+      .result.wide { grid-column: auto; }
+      .compare { overflow-x: auto; }
+      .compare-head, .compare-row { min-width: 650px; }
+      .sources { columns: 1; }
+      .truth { grid-template-columns: 1fr; gap: 5px; }
+      .lab-head { align-items: start; flex-direction: column; }
+      .nav-inner { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" aria-label="Study chapters">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top">Moving<span>Body</span></a>
+      <div class="nav-links">
+        <a href="#energy">Energy</a><a href="#chemistry">Chemistry</a><a href="#oxygen">Oxygen</a>
+        <a href="#adaptation">Adaptation</a><a href="#hybrid">Hybrid athlete</a><a href="#retain">Retain muscle</a><a href="#quiz">Quiz</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top">
+    <header class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="chip"><i class="dot"></i> Study atlas</span><span class="chip">Triathlon × strength</span></div>
+          <h1>The body<br>in <em>motion.</em></h1>
+          <p>From one ATP molecule splitting inside a muscle fibre to the heart, lungs, liver and mitochondria coordinating a long race—see the chemistry and the training adaptations as one connected system.</p>
+          <div class="hero-actions"><a class="button" href="#energy">Start with ATP ↓</a><a class="button secondary" href="#retain">Muscle-retention plan</a></div>
+        </div>
+
+        <div class="hero-visual" role="img" aria-label="Stylised human body showing lungs, heart, working leg muscle and mitochondria connected by oxygen flow">
+          <svg class="body-map" viewBox="0 0 460 520" aria-hidden="true">
+            <path class="body-outline" d="M230 35c-33 0-57 27-57 61 0 24 12 44 31 54l-20 28-62 31c-12 6-19 19-16 32l22 96 36-8-15-80 42-16-7 108-30 131h46l30-104 30 104h46l-30-131-7-108 42 16-15 80 36 8 22-96c3-13-4-26-16-32l-62-31-20-28c19-10 31-30 31-54 0-34-24-61-57-61z"/>
+            <path d="M196 169c-34 3-47 31-40 70 8 45 37 51 61 23l3-85c-8-6-15-8-24-8z" fill="rgba(98,220,235,.14)" stroke="#62dceb" class="organ"/>
+            <path d="M264 169c34 3 47 31 40 70-8 45-37 51-61 23l-3-85c8-6 15-8 24-8z" fill="rgba(98,220,235,.14)" stroke="#62dceb" class="organ"/>
+            <path d="M231 226c-19-30-55 1-25 31l25 23 25-23c30-30-6-61-25-31z" fill="#ff799d" stroke="#ffacc1" class="organ pulse"/>
+            <path d="M184 333c-12 35-15 68-28 118M276 333c12 35 15 68 28 118" fill="none" stroke="#ffb66e" stroke-width="17" stroke-linecap="round" opacity=".52"/>
+            <path d="M230 140v66M230 280v55M210 304l-38 118M250 304l38 118" fill="none" stroke="#62dceb" stroke-width="3" class="flow"/>
+            <g class="mito" transform="translate(290 388)"><ellipse cx="0" cy="0" rx="28" ry="16" fill="rgba(141,245,178,.14)" stroke="#8df5b2" stroke-width="2"/><path d="M-19 1c7-15 14 15 21 0s14 15 21 0" fill="none" stroke="#8df5b2" stroke-width="2"/></g>
+            <circle cx="230" cy="197" r="5" fill="#62dceb"/><circle cx="230" cy="296" r="5" fill="#62dceb"/><circle cx="183" cy="405" r="5" fill="#62dceb"/>
+          </svg>
+          <div class="map-label label-lungs"><b>Lungs</b>O₂ enters blood; CO₂ leaves.</div>
+          <div class="map-label label-heart"><b>Heart</b>Raises flow via heart rate × stroke volume.</div>
+          <div class="map-label label-muscle"><b>Muscle fibres</b>ATP powers myosin, ion pumps and calcium cycling.</div>
+          <div class="map-label label-mito"><b>Mitochondria</b>Use O₂ as the final electron acceptor; form H₂O.</div>
+          <div class="hero-equation">C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + usable energy (~30–32 ATP)</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="truth-strip"><div class="wrap"><div class="truth"><strong>Core idea</strong><p>Food does not directly contract muscle. Its chemical energy is used to rebuild <b>ATP</b>—the immediate currency every contraction spends.</p></div></div></div>
+
+    <section id="energy">
+      <div class="wrap">
+        <div class="section-kicker">01 / The energy problem</div>
+        <h2>Every movement is an ATP turnover problem.</h2>
+        <p class="lede">ATP stores are tiny, so the body must resynthesise ATP at almost exactly the rate you use it. “Aerobic” and “anaerobic” describe routes of resynthesis—not separate engines that switch on and off.<a class="source" href="#ref-1">1</a></p>
+
+        <div class="grid-3">
+          <article class="card card-pad"><div class="icon-orb">⚡</div><h3>ATP hydrolysis</h3><div class="equation">ATP + H₂O → ADP + Pᵢ + H⁺ + energy</div><p class="muted">Myosin uses it for force; SERCA pumps use it to return Ca²⁺; Na⁺/K⁺ pumps restore electrical gradients.</p></article>
+          <article class="card card-pad"><div class="icon-orb">↻</div><h3>ATP resynthesis</h3><div class="equation green">ADP + Pᵢ + energy → ATP</div><p class="muted">Phosphocreatine, glycolysis and oxidative phosphorylation provide the energy. They overlap continuously.</p></article>
+          <article class="card card-pad"><div class="icon-orb">≈</div><h3>Power vs capacity</h3><p class="muted">Fast pathways make ATP rapidly but run out quickly. Oxidative metabolism has lower maximum power, yet enormous capacity when fuel and oxygen delivery continue.</p></article>
+        </div>
+
+        <div class="card effort-lab" style="margin-top:22px">
+          <div class="lab-head"><div><span class="tag">Interactive</span><h3 style="margin-top:9px">Change the effort</h3></div><p class="small muted">Relative contribution is schematic—not a lab measurement.</p></div>
+          <div class="effort-tabs" role="group" aria-label="Choose an exercise effort">
+            <button class="effort-tab" data-effort="sprint" aria-pressed="true">6 s sprint</button>
+            <button class="effort-tab" data-effort="set" aria-pressed="false">30 s hard set</button>
+            <button class="effort-tab" data-effort="threshold" aria-pressed="false">20 min threshold</button>
+            <button class="effort-tab" data-effort="long" aria-pressed="false">90 min easy</button>
+          </div>
+          <div class="lab-body">
+            <div>
+              <div id="effort-bars" class="stack" role="img" aria-label="6 second sprint: phosphagen dominant, glycolysis high, oxidative contribution small">
+                <div id="bar-pcr" class="pcr" style="width:60%">PCr</div><div id="bar-gly" class="gly" style="width:35%">Glycolysis</div><div id="bar-oxi" class="oxi" style="width:5%">Oxidative</div>
+              </div>
+              <div class="legend"><span><i style="background:var(--cyan)"></i>Phosphagen</span><span><i style="background:var(--orange)"></i>Fast glycolysis</span><span><i style="background:var(--green)"></i>Oxidative</span></div>
+              <p id="effort-summary" aria-live="polite">Maximum ATP demand. Stored ATP and phosphocreatine carry the first seconds; glycolysis rises immediately and oxygen use is already increasing.</p>
+            </div>
+            <div class="lab-facts">
+              <div class="fact"><span>Dominant supply</span><b id="fact-system">Phosphagen</b></div>
+              <div class="fact"><span>Main fuel</span><b id="fact-fuel">PCr + glycogen</b></div>
+              <div class="fact"><span>Lactate</span><b id="fact-lactate">Rising</b></div>
+              <div class="fact"><span>Limitation</span><b id="fact-limit">PCr depletion</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="chemistry">
+      <div class="wrap">
+        <div class="section-kicker">02 / The chemical routes</div>
+        <h2>Three routes rebuild the same ATP.</h2>
+        <p class="lede">Their inputs, speed, capacity and by-products differ. The cell blends them according to ATP demand, oxygen delivery, enzyme capacity, fibre recruitment and available fuel.</p>
+
+        <div class="grid-3">
+          <article class="card card-pad"><span class="number">01 — fastest</span><h3 style="margin-top:12px">Phosphagen</h3><div class="equation">PCr + ADP + H⁺ ⇌ ATP + creatine</div><p>Creatine kinase transfers PCr’s phosphate directly to ADP. Very high power; very small reserve.</p><div class="equation">2 ADP ⇌ ATP + AMP</div><p class="muted small">Adenylate kinase salvages another ATP; rising AMP also signals low cellular energy.</p></article>
+          <article class="card card-pad"><span class="number">02 — fast</span><h3 style="margin-top:12px">Glycolysis</h3><div class="equation orange">Glucose + 2 ADP + 2 Pᵢ + 2 NAD⁺ → 2 pyruvate + 2 ATP + 2 NADH + 2 H⁺ + 2 H₂O</div><p>Fast cytosolic ATP. Starting from muscle glycogen nets <b>3 ATP</b> per glucose unit because the first phosphorylation cost was paid during storage.</p></article>
+          <article class="card card-pad"><span class="number">03 — enduring</span><h3 style="margin-top:12px">Oxidative phosphorylation</h3><div class="equation green">NADH/FADH₂ + O₂ + ADP + Pᵢ → NAD⁺/FAD + H₂O + ATP</div><p>Electrons power proton pumping across the inner mitochondrial membrane. ATP synthase lets protons flow back and couples that gradient to ATP formation.</p></article>
+        </div>
+
+        <div class="card" style="margin-top:22px">
+          <div class="pathway" aria-label="Metabolic pathway from carbohydrates and fats to mitochondrial ATP">
+            <div class="node"><div><b>Carbohydrate</b><small>blood glucose<br>muscle glycogen</small></div></div><div class="arrow">→</div>
+            <div class="node"><div><b>Pyruvate</b><small>via glycolysis<br>+ fast ATP</small></div></div><div class="arrow">→</div>
+            <div class="node"><div><b>Acetyl-CoA</b><small>gateway into<br>TCA cycle</small></div></div><div class="arrow">→</div>
+            <div class="node"><div><b>NADH + FADH₂</b><small>electron carriers<br>to ETC</small></div></div>
+          </div>
+          <div class="pathway" style="padding-top:0" aria-label="Fat metabolism joins at acetyl CoA and ends in ATP, carbon dioxide, water and heat">
+            <div class="node"><div><b>Fatty acids</b><small>from adipose<br>or muscle droplets</small></div></div><div class="arrow">→</div>
+            <div class="node"><div><b>β-oxidation</b><small>mitochondrial<br>acetyl-CoA</small></div></div><div class="arrow">↗</div>
+            <div class="node"><div><b>ETC + O₂</b><small>proton gradient<br>ATP synthase</small></div></div><div class="arrow">→</div>
+            <div class="node"><div><b>ATP + CO₂ + H₂O</b><small>and substantial<br>heat</small></div></div>
+          </div>
+        </div>
+
+        <div class="branch-row">
+          <article class="card card-pad"><h3>Complete glucose oxidation</h3><div class="equation green">C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + ~30–32 ATP</div><p class="muted">The yield varies with NADH shuttles and coupling efficiency. “36–38 ATP” is an outdated oversimplification for human cells.</p></article>
+          <article class="card card-pad"><h3>Palmitate oxidation</h3><div class="equation green">C₁₆H₃₂O₂ + 23 O₂ → 16 CO₂ + 16 H₂O + ~106 ATP</div><p class="muted">Fat yields much more ATP per molecule but requires more oxygen per ATP and cannot match carbohydrate’s maximum ATP production rate.</p></article>
+          <article class="card card-pad"><h3>Amino acids</h3><p>Usually a small share of exercise energy. After nitrogen removal, carbon skeletons enter as pyruvate, acetyl-CoA or TCA intermediates.</p><p class="muted">Contribution rises with prolonged exercise, low glycogen, low energy availability or insufficient carbohydrate. Nitrogen ultimately leaves mainly as urea.</p></article>
+        </div>
+
+        <div class="grid-2" style="margin-top:22px">
+          <article class="card card-pad"><h3>Lactate regenerates NAD⁺</h3><div class="equation orange">Pyruvate + NADH + H⁺ ⇌ lactate + NAD⁺</div><p>This reaction keeps rapid glycolysis running. Lactate is exported through MCT transporters, oxidised by other fibres and the heart, or recycled into glucose by the liver.<a class="source" href="#ref-2">2</a></p></article>
+          <article class="card card-pad"><h3>Lactate is not the acid villain</h3><p>High glycolytic flux and ATP hydrolysis coincide with rising H⁺ and falling pH, but lactate formation itself consumes H⁺. Blood lactate rises when appearance exceeds clearance; it is a useful fuel and signal, not metabolic waste.<a class="source" href="#ref-2">2</a></p><p class="muted small">And it does not cause next-day soreness—DOMS reflects exercise-induced tissue stress and inflammation.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="oxygen">
+      <div class="wrap">
+        <div class="section-kicker">03 / Whole-body transport</div>
+        <h2>Oxygen travels. Carbon leaves. Heat must escape.</h2>
+        <p class="lede">Endurance performance depends on a chain: ventilation, diffusion, blood oxygen carrying capacity, cardiac output, muscle blood flow, capillary exchange and mitochondrial use. A weak link limits the whole chain.</p>
+        <div class="card card-pad">
+          <div class="oxygen-line">
+            <div class="oxygen-step"><div class="bubble">O₂</div><b>Alveoli</b><small>diffuses into pulmonary blood</small></div>
+            <div class="oxygen-step"><div class="bubble">Hb</div><b>Haemoglobin</b><small>carries almost all blood O₂</small></div>
+            <div class="oxygen-step"><div class="bubble">Q̇</div><b>Heart</b><small>cardiac output = HR × SV</small></div>
+            <div class="oxygen-step"><div class="bubble">↯</div><b>Capillary</b><small>delivers near active fibres</small></div>
+            <div class="oxygen-step"><div class="bubble">Mb</div><b>Myoglobin</b><small>helps intracellular diffusion</small></div>
+            <div class="oxygen-step"><div class="bubble">IV</div><b>Complex IV</b><small>reduces O₂ to H₂O</small></div>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:18px">
+          <article class="card card-pad"><h3>The Fick principle</h3><div class="equation">V̇O₂ = cardiac output × (arterial O₂ − venous O₂)</div><p class="muted">Training can raise delivery (especially stroke volume and plasma volume) and extraction (capillaries, mitochondria and oxidative enzymes).</p></article>
+          <article class="card card-pad"><h3>A beautiful detail</h3><p><b>The oxygen you breathe mostly becomes water—not carbon dioxide.</b> CO₂ is released during pyruvate dehydrogenase and TCA-cycle decarboxylations. At the electron transport chain, O₂ accepts electrons and H⁺ to form H₂O.</p></article>
+        </div>
+        <div class="grid-4" style="margin-top:18px">
+          <article class="card card-pad"><span class="number">NERVES</span><h3 style="margin-top:9px">Immediate drive</h3><p class="muted small">Motor cortex recruits fibres; sympathetic activity raises heart rate, contractility and ventilation.</p></article>
+          <article class="card card-pad"><span class="number">BLOOD FLOW</span><h3 style="margin-top:9px">Local control</h3><p class="muted small">Metabolites and endothelial signals dilate vessels in active muscle, overriding sympathetic constriction locally.</p></article>
+          <article class="card card-pad"><span class="number">FUELS</span><h3 style="margin-top:9px">Mobilisation</h3><p class="muted small">Catecholamines support glycogenolysis and lipolysis; insulin usually falls while muscle contraction still increases glucose uptake.</p></article>
+          <article class="card card-pad"><span class="number">COOLING</span><h3 style="margin-top:9px">Heat loss</h3><p class="muted small">Skin blood flow and sweat rise. Evaporation cools; sweat that drips without evaporating removes little heat.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="time">
+      <div class="wrap">
+        <div class="section-kicker">04 / Time and recruitment</div>
+        <h2>Dominance changes by the second.</h2>
+        <p class="lede">These are overlapping phases, not borders. Oxidative metabolism contributes from the first contraction but needs time to reach a high rate.</p>
+        <div class="timeline">
+          <div class="time-item"><b>0–2 seconds</b><p>ATP already in the fibre buffers the instant demand.</p></div>
+          <div class="time-item"><b>Seconds</b><p>PCr supplies very high power; glycolysis accelerates immediately.</p></div>
+          <div class="time-item"><b>~10 s–2 min</b><p>Fast glycolysis can dominate hard efforts; oxidative share keeps climbing.</p></div>
+          <div class="time-item"><b>Minutes–hours</b><p>Oxidative ATP dominates sustained exercise; carb/fat mix shifts with intensity and stores.</p></div>
+          <div class="time-item"><b>Recovery</b><p>Oxygen supports PCr restoration, lactate oxidation, ion balance and later tissue remodelling.</p></div>
+        </div>
+
+        <div class="card compare" style="margin-top:38px">
+          <div class="compare-head"><div>Fibre type</div><div>Fatigue resistance</div><div>Force / speed</div><div>Typical traits</div></div>
+          <div class="compare-row"><b>Type I</b><div><div class="meter"><span style="width:92%"></span></div></div><div><div class="meter"><span style="width:35%;background:var(--orange)"></span></div></div><span class="small muted">Dense mitochondria, capillaries, myoglobin; highly oxidative</span></div>
+          <div class="compare-row"><b>Type IIa</b><div><div class="meter"><span style="width:60%"></span></div></div><div><div class="meter"><span style="width:72%;background:var(--orange)"></span></div></div><span class="small muted">Fast, trainable, both glycolytic and oxidative</span></div>
+          <div class="compare-row"><b>Type IIx</b><div><div class="meter"><span style="width:20%"></span></div></div><div><div class="meter"><span style="width:96%;background:var(--orange)"></span></div></div><span class="small muted">Highest shortening speed; very fatigable; strongly glycolytic</span></div>
+        </div>
+        <div class="truth" style="margin-top:18px"><strong>Recruitment</strong><p>The nervous system generally follows the size principle: low-threshold motor units first, then larger fast units as force demand or fatigue rises. A light load taken near failure can eventually recruit high-threshold units too.</p></div>
+      </div>
+    </section>
+
+    <section id="adaptation">
+      <div class="wrap">
+        <div class="section-kicker">05 / Adaptation</div>
+        <h2>Training is a repeated molecular message.</h2>
+        <p class="lede">A session disturbs energy, calcium, force and structure. Signalling changes gene expression and protein turnover; recovery builds a slightly better system. Consistency turns transient signals into anatomy.</p>
+        <div class="grid-2">
+          <article class="card adapt-track endurance"><span class="tag">Endurance signal</span><h3 style="margin-top:13px">More delivery, extraction and durability</h3><div class="signal"><span>Ca²⁺</span><i>+</i><span>AMP/ATP ↑</span><i>+</i><span>ROS</span><i>→</i><span>AMPK / CaMK / p38</span><i>→</i><span>PGC-1α</span></div><ul class="clean"><li>Mitochondrial biogenesis and oxidative enzymes</li><li>More capillaries and better endothelial function</li><li>Higher plasma volume and usually larger stroke volume</li><li>More glycogen storage and better fat oxidation at a given workload</li><li>Greater lactate transport, oxidation and threshold pace</li><li>Lower heart rate and fuel cost at the same submaximal pace</li></ul><p class="small muted">VO₂max can rise via central and peripheral changes; economy and sustainable fraction matter just as much in long events.<a class="source" href="#ref-3">3</a></p></article>
+          <article class="card adapt-track strength"><span class="tag">Strength signal</span><h3 style="margin-top:13px">More force, tissue and neural skill</h3><div class="signal"><span>Tension</span><i>+</i><span>strain</span><i>→</i><span>mechanosensors</span><i>→</i><span>mTORC1</span><i>→</i><span>MPS</span></div><ul class="clean"><li>Early neural gains: recruitment, rate coding and coordination</li><li>Myofibrillar protein accretion and fibre hypertrophy</li><li>Ribosome biogenesis supports higher protein-building capacity</li><li>Satellite cells can donate nuclei as fibres grow</li><li>Tendons and bone remodel more slowly than muscle</li><li>Higher strength reserve can improve endurance economy</li></ul><p class="small muted">Hypertrophy occurs when repeated increases in muscle protein synthesis accumulate beyond breakdown, with adequate training, energy and amino acids.</p></article>
+        </div>
+        <div class="grid-3" style="margin-top:18px">
+          <article class="card card-pad"><h3>What changes quickly?</h3><p class="muted">Plasma volume, enzymes, neural coordination, glycogen storage and signalling can change within days to weeks.</p></article>
+          <article class="card card-pad"><h3>What changes slowly?</h3><p class="muted">Meaningful hypertrophy, capillary growth, tendon stiffness, bone structure and major cardiac remodelling require repeated months and years.</p></article>
+          <article class="card card-pad"><h3>Detraining</h3><p class="muted">Plasma volume and some aerobic enzymes fade relatively fast; strength and muscle are better retained when load intensity remains, even if volume falls.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="hybrid">
+      <div class="wrap">
+        <div class="section-kicker">06 / The hybrid athlete</div>
+        <h2>Cardio does not automatically kill gains.</h2>
+        <p class="lede">Concurrent training can improve aerobic fitness and strength together. The practical “interference effect” is driven less by a single molecular switch and more by accumulated fatigue, high endurance volume, competing session quality and training the same muscle hard again before it recovers. Explosive strength appears more vulnerable than maximal strength or whole-muscle hypertrophy.<a class="source" href="#ref-4">4</a></p>
+
+        <div class="lens-switch" role="group" aria-label="Choose primary training lens">
+          <button class="lens-tab" data-lens="tri" aria-pressed="true">Triathlon priority</button><button class="lens-tab" data-lens="gym" aria-pressed="false">Gym priority</button>
+        </div>
+        <div id="lens-tri" class="lens-panel active">
+          <div class="priority-grid">
+            <article class="card"><span class="number">KEEP</span><h3 style="margin-top:10px">Two quality strength exposures</h3><ul class="clean"><li>Squat or leg press; hinge; unilateral knee-dominant work</li><li>Calf/soleus; pull; push; trunk/bracing</li><li>Mostly 3–8 challenging reps for compounds; stop 1–3 reps before failure</li><li>Reduce sets before reducing load when race training peaks</li></ul></article>
+            <article class="card"><span class="number">PLACE</span><h3 style="margin-top:10px">Protect key endurance sessions</h3><ul class="clean"><li>Do not put exhaustive leg work immediately before key intervals or long runs</li><li>Pair strength with an easy endurance day when useful</li><li>If both sessions are hard, separate by several hours or different days</li><li>Running adds impact/eccentric stress—monitor it more carefully than easy cycling</li></ul></article>
+          </div>
+        </div>
+        <div id="lens-gym" class="lens-panel">
+          <div class="priority-grid">
+            <article class="card"><span class="number">KEEP</span><h3 style="margin-top:10px">Lift while fresh</h3><ul class="clean"><li>Do priority lifting before cardio in the same session</li><li>Use enough weekly sets to progress, then add endurance around them</li><li>Low-to-moderate cycling is easier to recover from than hard running</li><li>Do not turn every cardio session into a threshold test</li></ul></article>
+            <article class="card"><span class="number">PLACE</span><h3 style="margin-top:10px">Build an aerobic base cheaply</h3><ul class="clean"><li>Mostly conversational work; add a small dose of intervals</li><li>Separate hard lower-body endurance from hard leg lifting</li><li>Eat carbohydrate before sessions where power or volume matters</li><li>Track gym performance: persistent regression means recovery debt</li></ul></article>
+          </div>
+        </div>
+
+        <div class="truth" style="margin-top:20px"><strong>Scheduling rule</strong><p>Order the day around the adaptation you value most. Separation is a fatigue-management tool, not magic: more recovery between two hard same-muscle sessions usually preserves quality.</p></div>
+      </div>
+    </section>
+
+    <section id="retain">
+      <div class="wrap">
+        <div class="section-kicker">07 / Retaining muscle</div>
+        <h2>Give muscle four reasons to stay.</h2>
+        <p class="lede">The strongest defence is the combination of mechanical tension, enough amino acids, enough total energy and recovery. Endurance training raises—not removes—the need for protein.<a class="source" href="#ref-5">5</a></p>
+        <div class="grid-4">
+          <article class="card card-pad"><div class="icon-orb">1</div><h3>Keep loading</h3><p class="muted small">Lift at least twice weekly when possible. In high-volume phases, keep meaningful load and trim redundant sets.</p></article>
+          <article class="card card-pad"><div class="icon-orb">2</div><h3>Protein daily</h3><p class="muted small">A practical hybrid-athlete range is <b>1.6–2.2 g/kg/day</b>, spread across 3–5 meals. Around 1.8 g/kg is a useful endurance anchor.<a class="source" href="#ref-5">5</a><a class="source" href="#ref-6">6</a></p></article>
+          <article class="card card-pad"><div class="icon-orb">3</div><h3>Fuel quality</h3><p class="muted small">Carbohydrate protects training output and glycogen. Periodise it to workload; do not chronically underfuel hard training.</p></article>
+          <article class="card card-pad"><div class="icon-orb">4</div><h3>Recover</h3><p class="muted small">Sleep, easier days and sensible session spacing let the protein-building response exceed accumulated damage and breakdown.</p></article>
+        </div>
+
+        <div class="card calculator" style="margin-top:22px">
+          <div>
+            <span class="tag">Personal calculator</span><h3 style="margin:12px 0 20px">Daily study ranges</h3>
+            <div class="field"><label for="weight">Body mass (kg)</label><input id="weight" type="number" min="35" max="220" step="0.5" value="75"></div>
+            <div class="field"><label for="load">Training day</label><select id="load"><option value="light">Rest / light</option><option value="moderate" selected>~1 hour moderate</option><option value="high">1–3 hours endurance</option><option value="extreme">4+ hours / race block</option></select></div>
+            <p class="small muted">Educational ranges for healthy adults, not a meal plan. Needs vary with sex, energy availability, goals, gut tolerance, environment and medical history.</p>
+          </div>
+          <div class="results" aria-live="polite">
+            <div class="result"><span>Protein / day</span><strong id="protein-day">120–165 g</strong><small class="muted">1.6–2.2 g/kg</small></div>
+            <div class="result"><span>Protein / meal</span><strong id="protein-meal">23–30 g</strong><small class="muted">0.3–0.4 g/kg</small></div>
+            <div class="result"><span>Carbohydrate / day</span><strong id="carb-day">375–525 g</strong><small id="carb-note" class="muted">5–7 g/kg</small></div>
+            <div class="result"><span>During long exercise</span><strong id="carb-hour">30–60 g/h</strong><small class="muted">Practise in training</small></div>
+            <div class="result wide"><span>Interpretation</span><p id="calc-text">Enough carbohydrate supports session quality; protein supplies amino acids for both contractile and mitochondrial remodelling.</p></div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:22px">
+          <article class="card card-pad"><h3>Fuel by session demand</h3><ul class="clean"><li><b>Short/easy:</b> normal meals may be enough</li><li><b>1–2.5 h:</b> often 30–60 g carbohydrate/hour</li><li><b>&gt;2.5 h:</b> often 60–90 g/hour using multiple transportable carbohydrates, after gut training</li><li><b>Rapid turnaround:</b> carbohydrate immediately matters more when another glycogen-demanding session follows soon</li></ul><p class="small muted">Ranges come from sports-nutrition position guidance; individual tolerance and race intensity matter.<a class="source" href="#ref-7">7</a></p></article>
+          <article class="card card-pad"><h3>Low energy availability warning</h3><p>Chronic underfueling can impair reproductive hormones, bone, immunity, iron status, protein synthesis, mood and performance—collectively described within RED-S.<a class="source" href="#ref-8">8</a></p><ul class="clean"><li>Persistent fatigue, irritability or declining output</li><li>Frequent illness or slow healing</li><li>Menstrual disruption or low libido</li><li>Bone stress injury or recurrent pain</li><li>Feeling cold, poor sleep, obsessional food/training behaviour</li></ul><p class="small muted">These signs deserve professional assessment; there is no single universal calorie threshold that diagnoses RED-S.</p></article>
+        </div>
+
+        <div class="truth" style="margin-top:18px"><strong>Hydration</strong><p>Replace enough fluid and sodium to preserve performance, but do not force fluid beyond losses. Body-mass gain during a long event is a warning for overdrinking and exercise-associated hyponatraemia.</p></div>
+      </div>
+    </section>
+
+    <section id="myths">
+      <div class="wrap">
+        <div class="section-kicker">08 / Clean mental models</div>
+        <h2>Five myths to delete.</h2>
+        <div class="grid-2" style="margin-top:34px">
+          <article class="card myth"><div class="myth-mark">×</div><div><h3>“Anaerobic means zero oxygen.”</h3><p>It means ATP demand is being met substantially by non-oxygen-dependent routes. Oxygen use continues and often rises.</p></div></article>
+          <article class="card myth"><div class="myth-mark">×</div><div><h3>“Lactate causes next-day soreness.”</h3><p>Lactate clears quickly and is useful fuel. DOMS develops later from unfamiliar loading and tissue/inflammatory responses.</p></div></article>
+          <article class="card myth"><div class="myth-mark">×</div><div><h3>“Fat-burning zone means most fat loss.”</h3><p>Lower intensities use a higher fraction of fat, but long-term fat loss depends mainly on total energy balance and adherence.</p></div></article>
+          <article class="card myth"><div class="myth-mark">×</div><div><h3>“Sweating means burning fat.”</h3><p>Sweat loss is water and electrolytes. Scale weight returns with rehydration.</p></div></article>
+          <article class="card myth"><div class="myth-mark">×</div><div><h3>“Cardio destroys muscle.”</h3><p>Underrecovery and underfueling do. Sensibly programmed endurance and resistance work are compatible.</p></div></article>
+          <article class="card myth"><div class="myth-mark">×</div><div><h3>“Breathing O₂ creates the CO₂.”</h3><p>O₂ becomes water at the electron transport chain. CO₂ comes mainly from carbon-fuel decarboxylation upstream.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="quiz">
+      <div class="wrap">
+        <div class="section-kicker">09 / Retrieval practice</div>
+        <h2>Can you rebuild the model?</h2>
+        <p class="lede">Retrieval beats rereading. Answer without scrolling up.</p>
+        <div class="card quiz-card">
+          <div class="quiz-meta"><span id="quiz-count">Question 1 of 8</span><span id="quiz-score">Score 0</span></div>
+          <h3 id="quiz-question" style="margin-top:20px">What immediate molecule directly powers muscle contraction?</h3>
+          <div id="quiz-options" class="quiz-options"></div>
+          <div id="quiz-feedback" class="quiz-feedback" role="status" aria-live="polite"></div>
+          <button id="quiz-next" class="button" type="button" disabled>Next question</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="glossary">
+      <div class="wrap">
+        <div class="section-kicker">10 / Fast glossary</div>
+        <h2>Terms worth owning.</h2>
+        <div class="card card-pad" style="margin-top:30px">
+          <details><summary>ATP, ADP and Pᵢ</summary><p>Adenosine triphosphate, adenosine diphosphate and inorganic phosphate. ATP hydrolysis releases usable free energy; metabolism reattaches phosphate to ADP.</p></details>
+          <details><summary>Oxidation and reduction</summary><p>Oxidation loses electrons; reduction gains them. Fuels are oxidised, NAD⁺/FAD are reduced, and oxygen is finally reduced to water.</p></details>
+          <details><summary>Glycolysis and glycogenolysis</summary><p>Glycolysis converts glucose to pyruvate. Glycogenolysis releases glucose units from stored glycogen so they can enter glycolysis.</p></details>
+          <details><summary>β-oxidation</summary><p>The mitochondrial spiral that cuts fatty acids into two-carbon acetyl-CoA units while generating NADH and FADH₂.</p></details>
+          <details><summary>Lactate threshold</summary><p>An intensity region where blood lactate rises more rapidly because appearance increasingly exceeds clearance. It is not one universal switch and depends on the testing method.</p></details>
+          <details><summary>VO₂max and economy</summary><p>VO₂max is the maximum rate of oxygen use. Economy is the oxygen/energy cost at a given speed or power. Long performance also depends on the fraction of VO₂max you can sustain.</p></details>
+          <details><summary>MPS and MPB</summary><p>Muscle protein synthesis and breakdown. Net balance is MPS minus MPB; repeated positive remodelling plus training can accumulate muscle.</p></details>
+          <details><summary>AMPK, PGC-1α and mTORC1</summary><p>AMPK senses cellular energy stress; PGC-1α coordinates many mitochondrial adaptations; mTORC1 regulates growth-related protein synthesis. Real concurrent adaptation is a network, not a simple one-switch battle.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section id="sources">
+      <div class="wrap">
+        <div class="section-kicker">Evidence map</div>
+        <h2>Read deeper.</h2>
+        <p class="lede">A curated starting set of peer-reviewed reviews, meta-analyses and consensus statements. Practical guidance is for healthy adults and should be individualised with a sports physician or dietitian when health, injury or RED-S is a concern.</p>
+        <ol class="sources">
+          <li id="ref-1"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10527431/" target="_blank" rel="noreferrer">Exercise metabolism and adaptation in skeletal muscle</a> (2023).</li>
+          <li id="ref-2"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9188361/" target="_blank" rel="noreferrer">Lactate in contemporary biology: a phoenix risen</a> (2022).</li>
+          <li id="ref-3"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6120690/" target="_blank" rel="noreferrer">Molecular basis of exercise-induced skeletal-muscle mitochondrial biogenesis</a> (2018).</li>
+          <li id="ref-4"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8891239/" target="_blank" rel="noreferrer">Compatibility of concurrent aerobic and strength training</a>—updated systematic review and meta-analysis (2022).</li>
+          <li id="ref-5"><a href="https://pubmed.ncbi.nlm.nih.gov/40117058/" target="_blank" rel="noreferrer">Protein nutrition for endurance athletes</a> (Sports Medicine, 2025).</li>
+          <li id="ref-6"><a href="https://pubmed.ncbi.nlm.nih.gov/28698222/" target="_blank" rel="noreferrer">Protein supplementation and resistance-training gains</a>—systematic review, meta-analysis and meta-regression (2018).</li>
+          <li id="ref-7"><a href="https://pubmed.ncbi.nlm.nih.gov/26920240/" target="_blank" rel="noreferrer">Nutrition and athletic performance</a>—Academy/DC/ACSM position statement (2016).</li>
+          <li id="ref-8"><a href="https://bjsm.bmj.com/content/57/17/1073" target="_blank" rel="noreferrer">IOC consensus statement on Relative Energy Deficiency in Sport</a> (2023).</li>
+          <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6071548/" target="_blank" rel="noreferrer">Exercise metabolism: fuels for the fire</a> (2018).</li>
+          <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9474354/" target="_blank" rel="noreferrer">Concurrent training and muscle-fibre hypertrophy</a>—systematic review and meta-analysis (2022).</li>
+          <li><a href="https://pubmed.ncbi.nlm.nih.gov/40153564/" target="_blank" rel="noreferrer">Strength training and endurance-performance determinants</a>—umbrella review (2025).</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="wrap">Built as a study tool, not a diagnostic or personalised medical plan. Equations are chemically simplified at whole-body level; pathway stoichiometry and ATP yield vary with assumptions and cellular conditions.</div></footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var efforts = {
+        sprint: { bars:[60,35,5], system:'Phosphagen', fuel:'PCr + glycogen', lactate:'Rising', limit:'PCr depletion', summary:'Maximum ATP demand. Stored ATP and phosphocreatine carry the first seconds; glycolysis rises immediately and oxygen use is already increasing.' },
+        set: { bars:[25,60,15], system:'Fast glycolysis', fuel:'Muscle glycogen', lactate:'High flux', limit:'H⁺ / metabolites', summary:'Across a hard 30-second set, PCr falls rapidly and glycolysis supplies much of the ATP. Oxidative metabolism still contributes and grows throughout the effort.' },
+        threshold: { bars:[2,13,85], system:'Oxidative', fuel:'Carbohydrate-heavy mix', lactate:'Production ≈ clearance', limit:'Sustainable O₂ flux', summary:'Oxidative phosphorylation dominates, with high carbohydrate use. Lactate is continuously produced, transported and oxidised; near threshold, clearance is close to its limit.' },
+        long: { bars:[1,4,95], system:'Oxidative', fuel:'Fat + carbohydrate', lactate:'Low / steady', limit:'Fuel, heat, fatigue', summary:'Most ATP is oxidative. Fat contribution is substantial, but carbohydrate remains essential—especially for hills, surges and maintaining pace as duration rises.' }
+      };
+      var effortButtons = document.querySelectorAll('.effort-tab');
+      effortButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          effortButtons.forEach(function (b) { b.setAttribute('aria-pressed', String(b === button)); });
+          var d = efforts[button.dataset.effort];
+          document.getElementById('bar-pcr').style.width = d.bars[0] + '%';
+          document.getElementById('bar-gly').style.width = d.bars[1] + '%';
+          document.getElementById('bar-oxi').style.width = d.bars[2] + '%';
+          document.getElementById('bar-pcr').textContent = d.bars[0] > 12 ? 'PCr' : '';
+          document.getElementById('bar-gly').textContent = d.bars[1] > 12 ? 'Glycolysis' : '';
+          document.getElementById('bar-oxi').textContent = d.bars[2] > 12 ? 'Oxidative' : '';
+          document.getElementById('fact-system').textContent = d.system;
+          document.getElementById('fact-fuel').textContent = d.fuel;
+          document.getElementById('fact-lactate').textContent = d.lactate;
+          document.getElementById('fact-limit').textContent = d.limit;
+          document.getElementById('effort-summary').textContent = d.summary;
+          document.getElementById('effort-bars').setAttribute('aria-label', button.textContent + ': ' + d.system + ' dominant; main fuel ' + d.fuel + '; lactate ' + d.lactate + '.');
+        });
+      });
+
+      var lensButtons = document.querySelectorAll('.lens-tab');
+      lensButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          lensButtons.forEach(function (b) { b.setAttribute('aria-pressed', String(b === button)); });
+          document.querySelectorAll('.lens-panel').forEach(function (p) { p.classList.remove('active'); });
+          document.getElementById('lens-' + button.dataset.lens).classList.add('active');
+        });
+      });
+
+      var weight = document.getElementById('weight');
+      var load = document.getElementById('load');
+      var loads = {
+        light: { carb:[3,5], hour:'Usually not needed', text:'On rest or light days, carbohydrate can track appetite and recovery while protein stays consistently high.' },
+        moderate: { carb:[5,7], hour:'30–60 g/h', text:'Enough carbohydrate supports session quality; protein supplies amino acids for both contractile and mitochondrial remodelling.' },
+        high: { carb:[6,10], hour:'60–90 g/h', text:'High-volume endurance work needs deliberate carbohydrate. Practise race fueling and distribute protein across the day.' },
+        extreme: { carb:[8,12], hour:'60–90+ g/h', text:'Extreme days require an individual race plan, trained gut and attention to fluid/sodium. More is not automatically better.' }
+      };
+      function rangeText(low, high) { return Math.round(low) + '–' + Math.round(high) + ' g'; }
+      function calculate() {
+        var kg = Math.max(35, Math.min(220, Number(weight.value) || 75));
+        var d = loads[load.value];
+        document.getElementById('protein-day').textContent = rangeText(kg*1.6, kg*2.2);
+        document.getElementById('protein-meal').textContent = rangeText(kg*.3, kg*.4);
+        document.getElementById('carb-day').textContent = rangeText(kg*d.carb[0], kg*d.carb[1]);
+        document.getElementById('carb-note').textContent = d.carb[0] + '–' + d.carb[1] + ' g/kg';
+        document.getElementById('carb-hour').textContent = d.hour;
+        document.getElementById('calc-text').textContent = d.text;
+      }
+      weight.addEventListener('input', calculate);
+      load.addEventListener('change', calculate);
+
+      var quiz = [
+        { q:'What immediate molecule directly powers muscle contraction?', a:['Glucose','ATP','Oxygen','Lactate'], c:1, why:'ATP hydrolysis directly supplies usable energy. Food fuels and oxygen help rebuild ATP.' },
+        { q:'At the electron transport chain, inhaled oxygen is finally converted mainly into…', a:['Carbon dioxide','Lactate','Water','Glucose'], c:2, why:'Oxygen accepts electrons and protons at complex IV and is reduced to water.' },
+        { q:'Why is lactate formation useful during high glycolytic flux?', a:['It causes soreness','It regenerates NAD⁺','It stores oxygen','It blocks glycolysis'], c:1, why:'Regenerated NAD⁺ allows glycolysis to keep processing substrate rapidly.' },
+        { q:'Which statement about energy systems is most accurate?', a:['Only one works at a time','Oxidative metabolism starts after two minutes','All contribute; dominance shifts','Anaerobic work uses no oxygen anywhere'], c:2, why:'All three systems overlap from the beginning; their relative rates change.' },
+        { q:'Why can carbohydrate support higher exercise intensity than fat?', a:['It has more ATP per molecule','It can deliver ATP faster and more efficiently per oxygen','It needs no enzymes','It cannot be stored'], c:1, why:'Fat has high total yield, but carbohydrate supports a higher ATP-production rate and more ATP per unit oxygen.' },
+        { q:'What is the best muscle-retention combination during heavy endurance training?', a:['Extra cardio + fasting','High protein only','Resistance load + protein + energy + recovery','Supplements without lifting'], c:2, why:'Muscle needs a mechanical reason to stay plus substrate and recovery to remodel.' },
+        { q:'Which adaptation most directly helps a trained muscle extract and use oxygen?', a:['Fewer capillaries','More mitochondria and capillaries','Lower blood volume','More Type IIx fibres only'], c:1, why:'Capillary and mitochondrial adaptations improve diffusion, extraction and oxidative ATP capacity.' },
+        { q:'Which statement best describes concurrent training?', a:['Cardio always prevents hypertrophy','AMPK permanently switches off mTOR','It works well when fatigue and session quality are managed','Strength blocks mitochondrial adaptation'], c:2, why:'The adaptations are compatible; programming, fuel and recovery determine how much each quality progresses.' }
+      ];
+      var qi = 0, score = 0, answered = false;
+      var qText = document.getElementById('quiz-question');
+      var qOptions = document.getElementById('quiz-options');
+      var qFeedback = document.getElementById('quiz-feedback');
+      var qNext = document.getElementById('quiz-next');
+      function renderQuiz() {
+        answered = false;
+        qNext.disabled = true;
+        qFeedback.textContent = '';
+        document.getElementById('quiz-count').textContent = 'Question ' + (qi+1) + ' of ' + quiz.length;
+        document.getElementById('quiz-score').textContent = 'Score ' + score;
+        qText.textContent = quiz[qi].q;
+        qOptions.innerHTML = '';
+        quiz[qi].a.forEach(function (answer, index) {
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'quiz-option'; b.textContent = answer;
+          b.addEventListener('click', function () {
+            if (answered) return;
+            answered = true;
+            Array.from(qOptions.children).forEach(function (x, i) {
+              x.disabled = true;
+              if (i === quiz[qi].c) x.classList.add('correct');
+            });
+            if (index === quiz[qi].c) { score += 1; qFeedback.textContent = 'Correct. ' + quiz[qi].why; }
+            else { b.classList.add('wrong'); qFeedback.textContent = 'Not quite. ' + quiz[qi].why; }
+            document.getElementById('quiz-score').textContent = 'Score ' + score;
+            qNext.disabled = false;
+            qNext.textContent = qi === quiz.length-1 ? 'See result' : 'Next question';
+            qNext.focus();
+          });
+          qOptions.appendChild(b);
+        });
+      }
+      qNext.addEventListener('click', function () {
+        if (qi < quiz.length-1) { qi += 1; renderQuiz(); qOptions.querySelector('button').focus({preventScroll:true}); return; }
+        qText.textContent = 'You scored ' + score + ' / ' + quiz.length;
+        qOptions.innerHTML = '';
+        qFeedback.textContent = score >= 7 ? 'Strong model. You can now explain the system, not merely name the pathways.' : 'Review the chemistry and hybrid-athlete chapters, then run the questions again.';
+        qNext.textContent = 'Restart quiz'; qNext.disabled = false;
+        qNext.onclick = function () { qi = 0; score = 0; qNext.onclick = null; renderQuiz(); };
+      });
+      renderQuiz();
+    }());
+  </script>
+</body>
+</html>
